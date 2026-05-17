@@ -1,0 +1,93 @@
+#include <Servo.h>
+
+Servo gateServo;
+
+const int crackPin = 2;
+
+const int trigPin = 9;
+const int echoPin = 10;
+
+const int buzzer = 7;
+const int relay = 8;
+
+long duration;
+int distance;
+
+void setup() {
+
+  pinMode(crackPin, INPUT_PULLUP);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  pinMode(buzzer, OUTPUT);
+  pinMode(relay, OUTPUT);
+
+  gateServo.attach(6);
+
+  gateServo.write(0);
+
+  Serial.begin(9600);
+}
+
+void loop() {
+
+  // Ultrasonic Trigger
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+
+  distance = duration * 0.034 / 2;
+
+  // Crack Detection
+  int crackStatus = digitalRead(crackPin);
+
+  // CONDITIONS
+
+  // Crack detected
+  if(crackStatus == HIGH) {
+
+    Serial.println("CRACK DETECTED");
+
+    digitalWrite(buzzer, HIGH);
+
+    digitalWrite(relay, HIGH);
+
+    gateServo.write(90);
+
+  }
+
+  // Obstacle detected
+  else if(distance < 15) {
+
+    Serial.println("OBSTACLE DETECTED");
+
+    digitalWrite(buzzer, HIGH);
+
+    digitalWrite(relay, HIGH);
+
+    gateServo.write(90);
+
+  }
+
+  // Safe condition
+  else {
+
+    Serial.println("TRACK SAFE");
+
+    digitalWrite(buzzer, LOW);
+
+    digitalWrite(relay, LOW);
+
+    gateServo.write(0);
+
+  }
+
+  delay(300);
+}
